@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id  String @id @default(uuid())
+  studentId String
+  // 
+  tutorId String
+  // 
+  startTime DateTime
+  endTime DateTime
+  price Float
+  status BookingStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions Session ?
+  reviews Review[]
+
+  @@index([studentId], name: "idx_booking_studentId")
+  @@map("bookings")
+}
+
+model Session {
+  id String @id @default(uuid())
+  bookingId String @unique
+  // one to one relationship with Booking
+  booking Booking @relation(fields: [bookingId], references: [id])
+  startTime DateTime
+  endTime DateTime
+  meetingLink String
+
+  @@index([bookingId], name: "idx_session_bookingId")
+  @@map("sessions")
+}
+
+
+model Review {
+  id String @id @default(uuid())
+  bookingId String @unique
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  tutorId String @unique
+  // 
+
+  studentId String @unique
+  // 
+  rating Int
+
+  @@index([bookingId], name: "idx_review_bookingId")
+  @@index([tutorId], name: "idx_review_tutorId")
+  @@index([studentId], name: "idx_review_studentId")
+
+  @@map("reviews")
+}
+
+model tutorProfile {
+  id String @id @default(uuid())
+  userId String @unique
+  // 
+  bio String
+  qualifications String
+  experience Int
+  price Float
+  hourlyRate Float
+  tutorCategories Tutor_Category[]
+  availableTimeSlots AvailableTimeSlot[]
+
+  @@index([userId], name: "idx_tutor_profile_userId")
+  @@map("tutor_profiles")
+}
+
+model Tutor_Category {
+  id String @id @default(uuid())
+  tutorId String
+  tutorProfile tutorProfile @relation(fields: [tutorId], references: [id])
+  categoryId String @unique
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([tutorId], name: "idx_tutor_category_tutorId")
+  @@map("tutor_categories")
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String 
+  description String
+  tutorCategories Tutor_Category[]
+
+  @@index([name], name: "idx_category_name")
+  @@map("categories")
+} 
+
+model AvailableTimeSlot {
+  id String @id @default(uuid())
+  tutorId String
+  tutorProfile tutorProfile @relation(fields: [tutorId], references: [id])
+  startTime DateTime
+  endTime DateTime
+  isAvailable Boolean @default(true)
+  @@index([tutorId], name: "idx_available_time_slot_tutorId")
+  @@map("available_time_slots")
+}
