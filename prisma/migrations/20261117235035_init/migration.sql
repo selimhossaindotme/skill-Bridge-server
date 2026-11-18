@@ -17,14 +17,14 @@ CREATE TABLE "bookings" (
 );
 
 -- CreateTable
-CREATE TABLE "sessions" (
+CREATE TABLE "sessionSlots" (
     "id" TEXT NOT NULL,
     "bookingId" TEXT NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
     "meetingLink" TEXT NOT NULL,
 
-    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "sessionSlots_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -84,10 +84,10 @@ CREATE TABLE "available_time_slots" (
 CREATE INDEX "idx_booking_studentId" ON "bookings"("studentId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "sessions_bookingId_key" ON "sessions"("bookingId");
+CREATE UNIQUE INDEX "sessionSlots_bookingId_key" ON "sessionSlots"("bookingId");
 
 -- CreateIndex
-CREATE INDEX "idx_session_bookingId" ON "sessions"("bookingId");
+CREATE INDEX "idx_session_bookingId" ON "sessionSlots"("bookingId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "reviews_bookingId_key" ON "reviews"("bookingId");
@@ -126,7 +126,7 @@ CREATE INDEX "idx_category_name" ON "categories"("name");
 CREATE INDEX "idx_available_time_slot_tutorId" ON "available_time_slots"("tutorId");
 
 -- AddForeignKey
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sessionSlots" ADD CONSTRAINT "sessionSlots_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "reviews" ADD CONSTRAINT "reviews_bookingId_fkey" FOREIGN KEY ("bookingId") REFERENCES "bookings"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

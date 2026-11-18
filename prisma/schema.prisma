@@ -20,67 +20,65 @@ enum BookingStatus {
 }
 
 model Booking {
-  id  String @id @default(uuid())
+  id        String        @id @default(uuid())
   studentId String
   // 
-  tutorId String
+  tutorId   String
   // 
   startTime DateTime
-  endTime DateTime
-  price Float
-  status BookingStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  sessions Session ?
-  reviews Review[]
+  endTime   DateTime
+  price     Float
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  sessions  SessionSlot?
+  reviews   Review[]
 
   @@index([studentId], name: "idx_booking_studentId")
   @@map("bookings")
 }
 
-model Session {
-  id String @id @default(uuid())
-  bookingId String @unique
+model SessionSlot {
+  id          String   @id @default(uuid())
+  bookingId   String   @unique
   // one to one relationship with Booking
-  booking Booking @relation(fields: [bookingId], references: [id])
-  startTime DateTime
-  endTime DateTime
+  booking     Booking  @relation(fields: [bookingId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
   meetingLink String
 
   @@index([bookingId], name: "idx_session_bookingId")
-  @@map("sessions")
+  @@map("sessionSlots")
 }
 
-
 model Review {
-  id String @id @default(uuid())
+  id        String @id @default(uuid())
   bookingId String @unique
 
   booking Booking @relation(fields: [bookingId], references: [id])
-  tutorId String @unique
+  tutorId String  @unique
   // 
 
   studentId String @unique
   // 
-  rating Int
+  rating    Int
 
   @@index([bookingId], name: "idx_review_bookingId")
   @@index([tutorId], name: "idx_review_tutorId")
   @@index([studentId], name: "idx_review_studentId")
-
   @@map("reviews")
 }
 
 model tutorProfile {
-  id String @id @default(uuid())
-  userId String @unique
+  id                 String              @id @default(uuid())
+  userId             String              @unique
   // 
-  bio String
-  qualifications String
-  experience Int
-  price Float
-  hourlyRate Float
-  tutorCategories Tutor_Category[]
+  bio                String
+  qualifications     String
+  experience         Int
+  price              Float
+  hourlyRate         Float
+  tutorCategories    Tutor_Category[]
   availableTimeSlots AvailableTimeSlot[]
 
   @@index([userId], name: "idx_tutor_profile_userId")
@@ -88,33 +86,100 @@ model tutorProfile {
 }
 
 model Tutor_Category {
-  id String @id @default(uuid())
-  tutorId String
+  id           String       @id @default(uuid())
+  tutorId      String
   tutorProfile tutorProfile @relation(fields: [tutorId], references: [id])
-  categoryId String @unique
-  category Category @relation(fields: [categoryId], references: [id])
+  categoryId   String       @unique
+  category     Category     @relation(fields: [categoryId], references: [id])
 
   @@index([tutorId], name: "idx_tutor_category_tutorId")
   @@map("tutor_categories")
 }
 
 model Category {
-  id String @id @default(uuid())
-  name String 
-  description String
+  id              String           @id @default(uuid())
+  name            String
+  description     String
   tutorCategories Tutor_Category[]
 
   @@index([name], name: "idx_category_name")
   @@map("categories")
-} 
+}
 
 model AvailableTimeSlot {
-  id String @id @default(uuid())
-  tutorId String
+  id           String       @id @default(uuid())
+  tutorId      String
   tutorProfile tutorProfile @relation(fields: [tutorId], references: [id])
-  startTime DateTime
-  endTime DateTime
-  isAvailable Boolean @default(true)
+  startTime    DateTime
+  endTime      DateTime
+  isAvailable  Boolean      @default(true)
+
   @@index([tutorId], name: "idx_available_time_slot_tutorId")
   @@map("available_time_slots")
+}
+
+model User {
+  id            String    @id
+  name          String
+  email         String
+  emailVerified Boolean   @default(false)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+
+  role   String? @default("student")
+  status String? @default("active")
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
